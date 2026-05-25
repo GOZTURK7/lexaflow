@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "description": "Language learning dictionary — click any word, get instant context-aware definitions",
+  "packageManager": "pnpm@10.28.0",
   "engines": {
     "node": ">=20",
     "pnpm": ">=8"
