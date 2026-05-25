@@ -14,8 +14,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     const result = await lookupWord(word, sourceLang as LanguageCode, targetLang as LanguageCode);
-    if (!result) return res.status(404).json({ ok: false, statusCode: 404, error: "not_found" });
-    return res.json({ ok: true, data: result });
+    if (!result) return res.status(404).json({ error: "not_found" });
+    return res.json(result);
   } catch (err) {
     console.error("lookup error", err);
     return res.status(500).json({ ok: false, statusCode: 500, error: "internal_error" });

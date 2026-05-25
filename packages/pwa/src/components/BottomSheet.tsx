@@ -99,15 +99,14 @@ export function BottomSheet({ open, word, sourceLang, targetLang, apiUrl, onClos
     setSaved(false);
 
     fetch(`${apiUrl}/api/lookup?word=${encodeURIComponent(word)}&sourceLang=${sourceLang}&targetLang=${targetLang}`)
-      .then((r) => r.json())
-      .then((json: LookupResponse) => {
-        setLoading(false);
+      .then(async (r) => {
+        if (r.status === 404) { setError("not_found"); return; }
+        if (!r.ok) { setError("error"); return; }
+        const json = await r.json() as LookupResponse;
         setData(json);
       })
-      .catch(() => {
-        setLoading(false);
-        setError("error");
-      });
+      .catch(() => setError("error"))
+      .finally(() => setLoading(false));
   }, [open, word, sourceLang, targetLang, apiUrl]);
 
   // Swipe-down to close
@@ -176,7 +175,7 @@ export function BottomSheet({ open, word, sourceLang, targetLang, apiUrl, onClos
     }
   }, [user, session, saved, saving, apiUrl, word, sourceLang, targetLang, data]);
 
-  const tatoeba = data?.entry.examples.filter((e) => e.source === "tatoeba") ?? [];
+  const tatoeba = data?.entry?.examples?.filter((e) => e.source === "tatoeba") ?? [];
 
   if (!open) return null;
 
@@ -248,14 +247,18 @@ export function BottomSheet({ open, word, sourceLang, targetLang, apiUrl, onClos
 
           {!loading && error && (
             <div className="p-5 text-center">
-              <p className="text-gray-500 text-sm">No definition found for <strong>{word}</strong>.</p>
-              <p className="text-gray-400 text-xs mt-1">Try the base form.</p>
+              <p className="text-gray-500 text-sm">
+                {error === "not_found"
+                  ? <><strong>{word}</strong> için tanım bulunamadı.</>
+                  : "Servis geçici olarak kullanılamıyor."}
+              </p>
+              {error === "not_found" && <p className="text-gray-400 text-xs mt-1">Kelimenin kök halini deneyin.</p>}
             </div>
           )}
 
           {!loading && !error && data && (
             <div className="px-4 pb-4">
-              {data.entry.partOfSpeechGroups.map((g, i) => (
+              {data.entry?.partOfSpeechGroups?.map((g, i) => (
                 <PosGroup key={i} group={g} />
               ))}
 
