@@ -7,7 +7,7 @@ import { useAuth } from "../lib/AuthContext";
 import { useTheme } from "../lib/useTheme";
 
 const ALL_LANGS = Object.entries(LANGUAGE_LABELS) as [LanguageCode, string][];
-const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3001";
+const API_URL = (import.meta.env.VITE_API_URL as string | undefined) ?? "";
 
 const DEFAULTS = { sourceLang: "nl" as LanguageCode, targetLang: "tr" as LanguageCode };
 

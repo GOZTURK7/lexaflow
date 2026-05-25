@@ -1,5 +1,4 @@
-import { Redis } from "ioredis";
-
+// In-memory LRU cache — suitable for serverless (no Redis dependency)
 class MemoryLRU {
   private store = new Map<string, { value: unknown; expiresAt: number }>();
   private readonly maxSize: number;
@@ -23,26 +22,9 @@ class MemoryLRU {
   }
 }
 
-let redis: Redis | null = null;
 const memory = new MemoryLRU();
 
-if (process.env.REDIS_URL) {
-  redis = new Redis(process.env.REDIS_URL, { lazyConnect: true, maxRetriesPerRequest: 2 });
-  redis.connect().catch(() => { redis = null; });
-}
-
 export const cache = {
-  async get<T>(key: string): Promise<T | null> {
-    if (redis) {
-      try { const r = await redis.get(key); return r ? JSON.parse(r) as T : null; } catch { return null; }
-    }
-    return memory.get<T>(key);
-  },
-  async set<T>(key: string, value: T, ttlSeconds: number): Promise<void> {
-    if (redis) {
-      try { await redis.set(key, JSON.stringify(value), "EX", ttlSeconds); } catch { /* non-fatal */ }
-      return;
-    }
-    memory.set(key, value, ttlSeconds);
-  },
+  async get<T>(key: string): Promise<T | null> { return memory.get<T>(key); },
+  async set<T>(key: string, value: T, ttlSeconds: number): Promise<void> { memory.set(key, value, ttlSeconds); },
 };
