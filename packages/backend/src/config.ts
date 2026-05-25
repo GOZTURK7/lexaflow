@@ -10,11 +10,9 @@ const EnvSchema = z.object({
 
   REDIS_URL: z.string().optional(),
 
-  DEEPL_API_KEY: z.string().optional(),
-  DEEPL_API_URL: z
-    .string()
-    .url()
-    .default("https://api-free.deepl.com/v2"),
+  // MyMemory — free translation fallback, no credit card needed
+  // Optional: register email at mymemory.translated.net for 10K words/day (vs 1K anonymous)
+  MYMEMORY_EMAIL: z.string().email().optional(),
 
   ALLOWED_ORIGINS: z
     .string()
