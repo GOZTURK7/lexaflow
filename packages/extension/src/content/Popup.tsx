@@ -164,7 +164,7 @@ export function Popup({ word, x, y, sourceLang, targetLang, showPhonetic = true,
     } else {
       window.speechSynthesis.addEventListener("voiceschanged", doSpeak, { once: true });
     }
-  }, [word, sourceLang, speaking]);
+  }, [word, currentSrc, speaking]);
 
   const handleSave = useCallback(() => {
     if (saved) return;
