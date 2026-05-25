@@ -1,0 +1,23 @@
+node_modules/
+dist/
+.turbo/
+*.local
+.env.local
+.env.*.local
+*.log
+.DS_Store
+Thumbs.db
+
+# Extension build artifacts
+packages/extension/dist/
+packages/extension/*.zip
+
+# PWA build
+packages/pwa/dist/
+
+# Backend build
+packages/backend/dist/
+
+# Test coverage
+coverage/
+.nyc_output/

@@ -1,0 +1,18 @@
+{
+  "name": "@lexaflow/pwa",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "echo 'PWA dev — Sprint 4'",
+    "build": "echo 'PWA build — Sprint 4'",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src"
+  },
+  "dependencies": {
+    "@lexaflow/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0"
+  }
+}

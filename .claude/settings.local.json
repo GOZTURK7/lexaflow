@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm --version)",
+      "Bash(npm install *)",
+      "Bash(pnpm install *)",
+      "Bash(pnpm --filter @lexaflow/shared build)",
+      "Bash(pnpm --filter @lexaflow/backend typecheck)",
+      "Bash(pnpm --filter @lexaflow/backend build)",
+      "Bash(SUPABASE_URL=https://placeholder.supabase.co SUPABASE_SERVICE_ROLE_KEY=placeholder-key node packages/backend/dist/index.js)",
+      "Bash(curl -s http://localhost:3001/health)",
+      "Bash(kill %1)",
+      "Bash(npm info *)",
+      "Bash(python3 -m json.tool)",
+      "Bash(curl -s \"http://localhost:3001/api/lookup?word=huis&sourceLang=nl&targetLang=en\")",
+      "Bash(curl -s \"http://localhost:3001/api/lookup?word=test&sourceLang=nl&targetLang=nl\")",
+      "Bash(curl -s \"http://localhost:3001/api/lookup?word=test&sourceLang=nl&targetLang=fr\")",
+      "Bash(git init *)"
+    ]
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "name": "@lexaflow/extension",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "echo 'Extension dev build — Sprint 3'",
+    "build": "echo 'Extension build — Sprint 3'",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src"
+  },
+  "dependencies": {
+    "@lexaflow/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.300",
+    "typescript": "^5.5.0"
+  }
+}
