@@ -193,7 +193,7 @@ export function Popup({ word, x, y, sourceLang, targetLang, showPhonetic = true,
     return () => document.removeEventListener("mousedown", handler);
   }, [onClose]);
 
-  const tatoeba = data?.entry.examples.filter((e) => e.source === "tatoeba") ?? [];
+  const tatoeba = data?.entry?.examples?.filter((e) => e.source === "tatoeba") ?? [];
 
   return (
     <div
