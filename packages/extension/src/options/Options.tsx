@@ -18,7 +18,7 @@ const DEFAULTS: Settings = {
   targetLang: "en",
   showPhonetic: true,
   requireDoubleClick: true,
-  apiUrl: "http://localhost:3001",
+  apiUrl: "https://lexaflow.vercel.app",
   darkMode: false,
 };
 

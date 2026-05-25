@@ -4,6 +4,11 @@
   "installCommand": "pnpm install",
   "framework": null,
   "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
+    { "source": "/api/words/export", "destination": "/api/words/export" },
+    { "source": "/api/words/:id",    "destination": "/api/words/[id]" },
+    { "source": "/api/words",        "destination": "/api/words/index" },
+    { "source": "/api/lookup",       "destination": "/api/lookup" },
+    { "source": "/api/health",       "destination": "/api/health" },
+    { "source": "/(.*)",             "destination": "/index.html" }
   ]
 }

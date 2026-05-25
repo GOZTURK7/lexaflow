@@ -1,6 +1,6 @@
 import type { LookupResponse, ApiError } from "@lexaflow/shared";
 
-const DEFAULT_API_URL = "http://localhost:3001";
+const DEFAULT_API_URL = "https://lexaflow.vercel.app";
 
 interface LookupMessage {
   type: "LOOKUP";
