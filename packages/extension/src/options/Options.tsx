@@ -18,7 +18,7 @@ const DEFAULTS: Settings = {
   targetLang: "en",
   showPhonetic: true,
   requireDoubleClick: true,
-  apiUrl: "https://lexaflow.vercel.app",
+  apiUrl: "https://lexaflow-eight.vercel.app",
   darkMode: false,
 };
 
@@ -48,7 +48,7 @@ function Toggle({
   );
 }
 
-const PWA_URL = "http://localhost:5173";
+const PWA_URL = "https://lexaflow-eight.vercel.app";
 
 function decodeJwtEmail(token: string): string | null {
   try {

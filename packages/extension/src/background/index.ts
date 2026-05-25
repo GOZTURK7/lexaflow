@@ -1,6 +1,6 @@
 import type { LookupResponse, ApiError } from "@lexaflow/shared";
 
-const DEFAULT_API_URL = "https://lexaflow.vercel.app";
+const DEFAULT_API_URL = "https://lexaflow-eight.vercel.app";
 
 interface LookupMessage {
   type: "LOOKUP";
@@ -47,7 +47,7 @@ function getAuthToken(): Promise<string | null> {
   });
 }
 
-const PWA_URL = "http://localhost:5173";
+const PWA_URL = "https://lexaflow-eight.vercel.app";
 
 chrome.runtime.onMessage.addListener(
   (msg: LookupMessage | SaveWordMessage | OpenLoginMessage | SetTokenMessage, _sender, sendResponse: (r: LookupResult | SaveResult) => void) => {
