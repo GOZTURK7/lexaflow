@@ -1,0 +1,9 @@
+{
+  "buildCommand": "pnpm turbo run build --filter=@lexaflow/pwa...",
+  "outputDirectory": "packages/pwa/dist",
+  "installCommand": "pnpm install",
+  "framework": null,
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}

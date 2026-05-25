@@ -28,16 +28,6 @@ export async function lookupRoutes(app: FastifyInstance) {
       return reply.code(400).send(error);
     }
 
-    const supportedPairs = ["nl-en", "en-nl", "en-tr", "tr-en"];
-    if (!supportedPairs.includes(`${sourceLang}-${targetLang}`)) {
-      const error: ApiError = {
-        error: "unsupported_language_pair",
-        message: `'${sourceLang}-${targetLang}' is not supported. Supported: ${supportedPairs.join(", ")}`,
-        statusCode: 400,
-      };
-      return reply.code(400).send(error);
-    }
-
     req.log.info({ word, sourceLang, targetLang }, "lookup");
 
     try {

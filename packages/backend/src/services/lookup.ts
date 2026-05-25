@@ -16,54 +16,49 @@ export async function lookupWord(
   const start = Date.now();
   const key = cacheKey(word, sourceLang, targetLang);
 
-  // 1. Cache check
   const cached = await cache.get<LookupResponse>(key);
   if (cached) {
     return { ...cached, cached: true, responseTimeMs: Date.now() - start };
   }
 
-  // 2. Wiktionary + Tatoeba in parallel
+  const needsTranslation = targetLang !== "en";
+
+  // Fetch Wiktionary first so we know the lemma (base form) before translating.
+  // Tatoeba runs in parallel since it doesn't depend on the lemma.
   const [wiktResult, tatoebaExamples] = await Promise.all([
     fetchWiktionary(word, sourceLang),
     fetchTatoeba(word, sourceLang, targetLang),
   ]);
 
+  // Translate the base form (lemma) so inflected words get the correct translation.
+  // e.g. "wapens" → lemma "wapen" → translate "wapen" → "silah" (not "silahlık")
+  const wordForTranslation = wiktResult?.lemma ?? word;
+  const translation = needsTranslation
+    ? await fetchTranslation(wordForTranslation, sourceLang, targetLang)
+    : null;
+
+  const examples = tatoebaExamples;
+
   const langPair: LanguagePair = `${sourceLang}-${targetLang}` as LanguagePair;
 
-  // 3. If Wiktionary found nothing → MyMemory translation only
   if (!wiktResult) {
-    const translation = await fetchTranslation(word, sourceLang, targetLang);
     if (!translation) return null;
-
     const response: LookupResponse = {
-      langPair,
-      cached: false,
-      responseTimeMs: Date.now() - start,
-      entry: {
-        word,
-        language: sourceLang,
-        partOfSpeechGroups: [],
-        examples: tatoebaExamples,
-        translation,
-      },
+      langPair, cached: false, responseTimeMs: Date.now() - start,
+      entry: { word, language: sourceLang, partOfSpeechGroups: [], examples, translation },
     };
-
     await cache.set(key, response, MYMEMORY_TTL);
     return response;
   }
 
-  // 4. Merge Tatoeba examples into the entry-level examples list
-  // Wiktionary examples are already inside partOfSpeechGroups definitions
   const response: LookupResponse = {
-    langPair,
-    cached: false,
-    responseTimeMs: Date.now() - start,
+    langPair, cached: false, responseTimeMs: Date.now() - start,
     entry: {
-      word,
-      language: sourceLang,
+      word, language: sourceLang,
       phonetic: wiktResult.phonetic,
       partOfSpeechGroups: wiktResult.partOfSpeechGroups,
-      examples: tatoebaExamples,
+      examples,
+      translation: translation ?? undefined,
     },
   };
 

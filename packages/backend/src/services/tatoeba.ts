@@ -1,16 +1,20 @@
 import type { LanguageCode, ExampleSentence } from "@lexaflow/shared";
 
 const BASE_URL = "https://tatoeba.org/api_v0/search";
-const TIMEOUT_MS = 5000;
+const TIMEOUT_MS = 7000;
 const TTL_SECONDS = 21600; // 6 hours
 
 export { TTL_SECONDS as TATOEBA_TTL };
 
 // Tatoeba uses ISO 639-3 codes
 const TATOEBA_LANG: Record<LanguageCode, string> = {
-  nl: "nld",
-  en: "eng",
-  tr: "tur",
+  nl: "nld", en: "eng", tr: "tur",
+  de: "deu", fr: "fra", es: "spa", it: "ita", pt: "por",
+  ru: "rus", pl: "pol", sv: "swe", da: "dan", no: "nob",
+  fi: "fin", cs: "ces", hu: "hun", ro: "ron",
+  ja: "jpn", zh: "cmn", ko: "kor",
+  ar: "ara", fa: "pes", hi: "hin",
+  uk: "ukr", el: "ell", he: "heb", id: "ind",
 };
 
 interface TatoebaTranslation {
@@ -49,7 +53,11 @@ export async function fetchTatoeba(
   try {
     const res = await fetch(url.toString(), {
       signal: AbortSignal.timeout(TIMEOUT_MS),
-      headers: { "User-Agent": "LexaFlow/1.0 (language learning app)" },
+      headers: {
+        "User-Agent": "Mozilla/5.0 (compatible; LexaFlow/1.0)",
+        "Accept-Encoding": "gzip, deflate, br",
+        "Accept": "application/json",
+      },
     });
 
     if (!res.ok) return [];

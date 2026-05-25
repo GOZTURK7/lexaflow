@@ -1,29 +1,100 @@
 import { z } from "zod";
 
-// ─── Language Pairs ───────────────────────────────────────────────────────────
+// ─── Language Codes ───────────────────────────────────────────────────────────
 
-export const LanguageCode = z.enum(["nl", "en", "tr"]);
+export const LanguageCode = z.enum([
+  "nl", // Dutch
+  "en", // English
+  "tr", // Turkish
+  "de", // German
+  "fr", // French
+  "es", // Spanish
+  "it", // Italian
+  "pt", // Portuguese
+  "ru", // Russian
+  "pl", // Polish
+  "sv", // Swedish
+  "da", // Danish
+  "no", // Norwegian
+  "fi", // Finnish
+  "cs", // Czech
+  "hu", // Hungarian
+  "ro", // Romanian
+  "ja", // Japanese
+  "zh", // Chinese
+  "ko", // Korean
+  "ar", // Arabic
+  "fa", // Persian
+  "hi", // Hindi
+  "uk", // Ukrainian
+  "el", // Greek
+  "he", // Hebrew
+  "id", // Indonesian
+]);
 export type LanguageCode = z.infer<typeof LanguageCode>;
 
-export const LanguagePair = z.enum([
-  "nl-en", // Dutch → English
-  "en-nl", // English → Dutch
-  "en-tr", // English → Turkish
-  "tr-en", // Turkish → English
-]);
+// Any valid "xx-yy" pair where both sides are LanguageCodes and they differ
+export const LanguagePair = z.string().regex(/^[a-z]{2,3}-[a-z]{2,3}$/);
 export type LanguagePair = z.infer<typeof LanguagePair>;
 
-export const LANGUAGE_PAIR_LABELS: Record<LanguagePair, string> = {
-  "nl-en": "Dutch → English",
-  "en-nl": "English → Dutch",
-  "en-tr": "English → Turkish",
-  "tr-en": "Turkish → English",
+export const LANGUAGE_LABELS: Record<LanguageCode, string> = {
+  nl: "Dutch",
+  en: "English",
+  tr: "Turkish",
+  de: "German",
+  fr: "French",
+  es: "Spanish",
+  it: "Italian",
+  pt: "Portuguese",
+  ru: "Russian",
+  pl: "Polish",
+  sv: "Swedish",
+  da: "Danish",
+  no: "Norwegian",
+  fi: "Finnish",
+  cs: "Czech",
+  hu: "Hungarian",
+  ro: "Romanian",
+  ja: "Japanese",
+  zh: "Chinese",
+  ko: "Korean",
+  ar: "Arabic",
+  fa: "Persian",
+  hi: "Hindi",
+  uk: "Ukrainian",
+  el: "Greek",
+  he: "Hebrew",
+  id: "Indonesian",
 };
 
 export const LANGUAGE_LOCALE: Record<LanguageCode, string> = {
   nl: "nl-NL",
   en: "en-US",
   tr: "tr-TR",
+  de: "de-DE",
+  fr: "fr-FR",
+  es: "es-ES",
+  it: "it-IT",
+  pt: "pt-PT",
+  ru: "ru-RU",
+  pl: "pl-PL",
+  sv: "sv-SE",
+  da: "da-DK",
+  no: "nb-NO",
+  fi: "fi-FI",
+  cs: "cs-CZ",
+  hu: "hu-HU",
+  ro: "ro-RO",
+  ja: "ja-JP",
+  zh: "zh-CN",
+  ko: "ko-KR",
+  ar: "ar-SA",
+  fa: "fa-IR",
+  hi: "hi-IN",
+  uk: "uk-UA",
+  el: "el-GR",
+  he: "he-IL",
+  id: "id-ID",
 };
 
 // ─── Dictionary Entities ──────────────────────────────────────────────────────
@@ -122,5 +193,5 @@ export type UserSettings = z.infer<typeof UserSettingsSchema>;
 export const DEFAULT_SETTINGS: UserSettings = {
   languagePair: "nl-en",
   showPhonetic: true,
-  requireDoubleClick: false,
+  requireDoubleClick: true,
 };

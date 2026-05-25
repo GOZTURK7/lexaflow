@@ -1,8 +1,10 @@
 import Fastify, { type FastifyError } from "fastify";
 import { config } from "./config.js";
 import { registerCors } from "./plugins/cors.js";
+import { registerRateLimit } from "./plugins/rateLimit.js";
 import { healthRoutes } from "./routes/health.js";
 import { lookupRoutes } from "./routes/lookup.js";
+import { wordRoutes } from "./routes/words.js";
 
 async function build() {
   const app = Fastify({
@@ -19,6 +21,7 @@ async function build() {
   });
 
   await registerCors(app);
+  await registerRateLimit(app);
 
   // Request ID header propagation
   app.addHook("onRequest", async (req) => {
@@ -27,6 +30,7 @@ async function build() {
 
   await app.register(healthRoutes);
   await app.register(lookupRoutes);
+  await app.register(wordRoutes);
 
   // Unhandled route
   app.setNotFoundHandler((_req, reply) => {
@@ -45,10 +49,22 @@ async function build() {
   return app;
 }
 
+// Fire-and-forget: warm up TLS/TCP connections to external APIs on startup
+// so the first real user request doesn't pay the connection overhead.
+function warmConnections() {
+  const signal = AbortSignal.timeout(8000);
+  Promise.allSettled([
+    fetch("https://en.wiktionary.org/api/rest_v1/page/definition/test", { signal }),
+    fetch("https://tatoeba.org/api_v0/search?query=test&from=nld&to=eng&limit=1", { signal }),
+    fetch("https://translate.googleapis.com/translate_a/single?client=gtx&sl=nl&tl=en&dt=t&q=test", { signal }),
+  ]);
+}
+
 async function start() {
   const app = await build();
   try {
     await app.listen({ port: config.PORT, host: config.HOST });
+    warmConnections();
   } catch (err) {
     app.log.error(err);
     process.exit(1);

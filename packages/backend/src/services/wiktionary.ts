@@ -1,12 +1,11 @@
 import type { LanguageCode, PartOfSpeechGroup, ExampleSentence } from "@lexaflow/shared";
 
 const BASE_URL = "https://en.wiktionary.org/api/rest_v1/page/definition";
-const TIMEOUT_MS = 5000;
+const TIMEOUT_MS = 7000;
 const TTL_SECONDS = 86400; // 24 hours
 
 export { TTL_SECONDS as WIKTIONARY_TTL };
 
-// Wiktionary REST API response shape (simplified)
 interface WiktionaryDefinition {
   definition: string;
   parsedExamples?: Array<{ example: string; translation?: string }>;
@@ -21,9 +20,9 @@ interface WiktionaryEntry {
 
 type WiktionaryResponse = Record<string, WiktionaryEntry[]>;
 
-// Strip HTML tags from Wiktionary definition strings
 function stripHtml(html: string): string {
   return html
+    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "")
     .replace(/<[^>]+>/g, "")
     .replace(/&amp;/g, "&")
     .replace(/&lt;/g, "<")
@@ -34,39 +33,63 @@ function stripHtml(html: string): string {
     .trim();
 }
 
-// Map our LanguageCode to the key used in Wiktionary response
 const WIKTIONARY_LANG_KEY: Record<LanguageCode, string> = {
-  nl: "nl",
-  en: "en",
-  tr: "tr",
+  nl: "nl", en: "en", tr: "tr",
+  de: "de", fr: "fr", es: "es", it: "it", pt: "pt",
+  ru: "ru", pl: "pl", sv: "sv", da: "da", no: "no",
+  fi: "fi", cs: "cs", hu: "hu", ro: "ro",
+  ja: "ja", zh: "zh", ko: "ko",
+  ar: "ar", fa: "fa", hi: "hi",
+  uk: "uk", el: "el", he: "he", id: "id",
 };
 
 export interface WiktionaryResult {
   phonetic?: string;
   partOfSpeechGroups: PartOfSpeechGroup[];
+  // Set when the looked-up word is an inflected form; contains the base word.
+  lemma?: string;
 }
 
-export async function fetchWiktionary(
+// Matches short "form of" definitions like:
+//   "plural of wapen"
+//   "past tense of lopen"
+//   "first-person singular present indicative of zijn"
+//   "diminutive of hond"
+// Captures the base word after the last "of".
+const FORM_OF_RE = /\bof\s+([a-záéíóúàèìòùäëïöüâêîôûãõñçœæøåþðışğЀ-ӿͰ-Ͽ\w-]+)\s*\.?$/i;
+
+function extractLemma(meanings: string[]): string | null {
+  if (meanings.length === 0) return null;
+  const lemmas = meanings.map((m) => {
+    if (m.length > 100) return null; // real definitions are longer
+    const match = m.match(FORM_OF_RE);
+    return match ? (match[1] ?? "").toLowerCase() : null;
+  });
+  // Only redirect when ALL definitions point to the same base word
+  const unique = [...new Set(lemmas.filter((l): l is string => l !== null))];
+  return unique.length === 1 ? (unique[0] ?? null) : null;
+}
+
+async function fetchRaw(
   word: string,
   sourceLang: LanguageCode,
-): Promise<WiktionaryResult | null> {
+): Promise<{ phonetic?: string; partOfSpeechGroups: PartOfSpeechGroup[] } | null> {
   const url = `${BASE_URL}/${encodeURIComponent(word.toLowerCase())}`;
 
   let data: WiktionaryResponse;
   try {
     const res = await fetch(url, {
       signal: AbortSignal.timeout(TIMEOUT_MS),
-      headers: { "User-Agent": "LexaFlow/1.0 (language learning app)" },
+      headers: {
+        "User-Agent": "LexaFlow/1.0 (language learning app)",
+        "Accept-Encoding": "gzip, deflate, br",
+      },
     });
-
     if (res.status === 404) return null;
     if (!res.ok) throw new Error(`Wiktionary HTTP ${res.status}`);
-
     data = (await res.json()) as WiktionaryResponse;
   } catch (err) {
-    if (err instanceof Error && err.name === "TimeoutError") {
-      return null;
-    }
+    if (err instanceof Error && err.name === "TimeoutError") return null;
     throw err;
   }
 
@@ -78,8 +101,6 @@ export async function fetchWiktionary(
     partOfSpeech: entry.partOfSpeech,
     definitions: entry.definitions.map((def) => {
       const examples: ExampleSentence[] = [];
-
-      // parsedExamples has both the sentence and its translation
       if (def.parsedExamples?.length) {
         def.parsedExamples.slice(0, 2).forEach((ex, i) => {
           examples.push({
@@ -91,22 +112,36 @@ export async function fetchWiktionary(
         });
       } else if (def.examples?.length) {
         def.examples.slice(0, 2).forEach((ex, i) => {
-          examples.push({
-            id: `wikt-${i}`,
-            text: stripHtml(ex),
-            source: "wiktionary",
-          });
+          examples.push({ id: `wikt-${i}`, text: stripHtml(ex), source: "wiktionary" });
         });
       }
-
-      return {
-        meaning: stripHtml(def.definition),
-        examples,
-        synonyms: [],
-        antonyms: [],
-      };
+      return { meaning: stripHtml(def.definition), examples, synonyms: [], antonyms: [] };
     }),
   }));
 
   return { partOfSpeechGroups };
+}
+
+export async function fetchWiktionary(
+  word: string,
+  sourceLang: LanguageCode,
+): Promise<WiktionaryResult | null> {
+  const raw = await fetchRaw(word, sourceLang);
+  if (!raw) return null;
+
+  // Check if every definition is a "form of" redirect (e.g. "plural of wapen")
+  const allMeanings = raw.partOfSpeechGroups.flatMap((g) =>
+    g.definitions.map((d) => d.meaning),
+  );
+  const lemma = extractLemma(allMeanings);
+
+  if (lemma && lemma !== word.toLowerCase()) {
+    // Re-fetch the base form (one level only — no chaining)
+    const baseRaw = await fetchRaw(lemma, sourceLang);
+    if (baseRaw) {
+      return { ...baseRaw, lemma };
+    }
+  }
+
+  return raw;
 }

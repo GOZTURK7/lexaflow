@@ -1,3 +1,4 @@
+import "./env.js";
 import { z } from "zod";
 
 const EnvSchema = z.object({
@@ -5,8 +6,8 @@ const EnvSchema = z.object({
   PORT: z.coerce.number().default(3001),
   HOST: z.string().default("0.0.0.0"),
 
-  SUPABASE_URL: z.string().url(),
-  SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
+  SUPABASE_URL: z.string().url().optional(),
+  SUPABASE_SERVICE_ROLE_KEY: z.string().min(1).optional(),
 
   REDIS_URL: z.string().optional(),
 
