@@ -16,6 +16,9 @@
     "typecheck": "turbo typecheck",
     "clean": "turbo clean && rimraf node_modules"
   },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.0"
+  },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",
